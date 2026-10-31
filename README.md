@@ -1,7 +1,7 @@
-# 抖音 线程撕裂者
+# Texas · 抖音网页优化
 
 适用于桌面浏览器的抖音网页版用户脚本（Tampermonkey / Violentmonkey），用于在海外网络环境下加快视频加载。设计思路参考
-[Bilibili 线程撕裂者](https://github.com/MrTangLuyao/Bilibili-thread-ripper)（多连接、多节点并发下载），代码针对抖音独立实现。
+[MrTangLuyao/Bilibili-thread-ripper](https://github.com/MrTangLuyao/Bilibili-thread-ripper)（多连接、多节点并发下载），代码针对抖音独立实现。
 
 **本脚本不修改站点播放器代码**，仅执行以下三项操作：替换视频地址、预加载视频、在站点接口数据中选择最高画质。
 任一环节出现异常时均回退至站点原始地址，此时行为与未安装脚本一致。
@@ -18,7 +18,7 @@
 
 1. 在 Chrome 中安装 [Tampermonkey](https://www.tampermonkey.net/) 或 [Violentmonkey](https://violentmonkey.github.io/)。
 2. **Chrome 必需步骤**：打开 `chrome://extensions`，进入 Tampermonkey（或 Violentmonkey）的「详情」页，启用 **「允许运行用户脚本」**（旧版 Chrome 需启用右上角的「开发者模式」）。未启用时脚本不会运行。
-3. 安装脚本：[**douyin.user.js**](https://raw.githubusercontent.com/KurisuRakko/Douyin-Thread-Ripper/main/user_scripts/douyin.user.js)
+3. 安装脚本：[**douyin.user.js**](https://raw.githubusercontent.com/KurisuRakko/Texas/main/user_scripts/douyin.user.js)
 
    如已安装旧版 `dxtr.user.js`，请先在脚本管理器中将其卸载，再安装本脚本。
 4. 打开抖音网页版，页面右下角显示 **DX** 悬浮按钮即表示脚本已运行。点击该按钮可打开设置面板。
