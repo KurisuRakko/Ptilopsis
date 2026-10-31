@@ -1,14 +1,13 @@
-// Entry point: pick the site module, install the hooks, expose the debug report.
+// Entry point: install the Douyin hooks, expose the debug report.
 (() => {
   "use strict";
   const host = location.hostname;
-  const site = /(^|\.)douyin\.com$/.test(host) ? "douyin" : /(^|\.)xiaohongshu\.com$/.test(host) ? "xhs" : "";
-  if (!site || !DXTR.sites[site]) return; // each build carries only its own site module
+  const site = /(^|\.)douyin\.com$/.test(host) ? "douyin" : "";
+  if (!site || !DXTR.sites[site]) return;
   DXTR.site = site;
   DXTR.sites[site].install();
-  if (site === "xhs") DXTR.xhsImages?.install();
-  if (site === "douyin") DXTR.douyinImages?.install();
-  if (site === "douyin") DXTR.douyinClean?.install();
+  DXTR.douyinImages?.install();
+  DXTR.douyinClean?.install();
   DXTR.panel?.install();
 
   window.__dxtrDebug = {
@@ -25,9 +24,8 @@
         videos: DXTR.videos.snapshot(),
         media: DXTR.mediaHook.stats(),
         mseFetch: DXTR.mediaFetch.stats(),
-        images: DXTR.xhsImages?.stats?.() || null,
-        ads: site === "douyin" ? DXTR.sites.douyin?.adStats() : null,
-        pictures: site === "douyin" ? DXTR.douyinImages?.stats() : null,
+        ads: DXTR.sites.douyin?.adStats(),
+        pictures: DXTR.douyinImages?.stats(),
         log: DXTR.log.lines().slice(-60)
       }, null, 2);
     }

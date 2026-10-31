@@ -1,9 +1,9 @@
-# 抖音 / 小红书 线程撕裂者
+# 抖音 线程撕裂者
 
-给海外用户用的油猴脚本：让抖音、小红书网页版的视频和图片加载得更快。思路来自
-[Bilibili 线程撕裂者](https://github.com/MrTangLuyao/Bilibili-thread-ripper)（多连接、多节点并发下载），代码是针对这两个站重新写的。
+给海外用户用的油猴脚本：让抖音网页版的视频加载得更快。思路来自
+[Bilibili 线程撕裂者](https://github.com/MrTangLuyao/Bilibili-thread-ripper)（多连接、多节点并发下载），代码是针对抖音重新写的。
 
-**它不改网站自己的播放器代码**，只做三件事：换掉视频/图片的地址、提前下载、在网站的接口数据里挑最高画质。
+**它不改网站自己的播放器代码**，只做三件事：换掉视频的地址、提前下载、在网站的接口数据里挑最高画质。
 任何一步出问题都会退回网站原来的地址，最坏情况等于没装。
 
 ## 效果（澳洲家宽实测，2026-10-03）
@@ -13,18 +13,15 @@
 | 抖音同一个视频文件的下载速度 | 单连接约 9 Mbps | 多节点并发 200 Mbps 以上（64 MB 的 1080p 视频 1.5–2.5 秒下完） |
 | 抖音画质（未登录） | 默认 720p | 自动换到接口里有的最高档（多数是 1080p） |
 | 刷下一条 | 每条现下 | 后面 2 条提前下好，划过去直接播 |
-| 小红书往下滚一屏，新封面全部显示 | 中位数约 1000 ms | 中位数约 90 ms |
 
 ## 安装
 
 1. 在 Chrome 里装 [Tampermonkey](https://www.tampermonkey.net/) 或 [暴力猴 Violentmonkey](https://violentmonkey.github.io/)。
 2. **Chrome 必做**：打开 `chrome://extensions` → 找到 Tampermonkey（或暴力猴）→「详情」→ 打开 **「允许运行用户脚本」**（旧版 Chrome 是打开右上角「开发者模式」）。不开的话脚本不会运行。
-3. 两个站各一个脚本，用哪个装哪个：
-   - 抖音：[**douyin.user.js**](https://raw.githubusercontent.com/KurisuRakko/DouyinXHS-Thread-Ripper/main/user_scripts/douyin.user.js)
-   - 小红书：[**xhs.user.js**](https://raw.githubusercontent.com/KurisuRakko/DouyinXHS-Thread-Ripper/main/user_scripts/xhs.user.js)
+3. 安装脚本：[**douyin.user.js**](https://raw.githubusercontent.com/KurisuRakko/Douyin-Thread-Ripper/main/user_scripts/douyin.user.js)
 
    以前装过 `dxtr.user.js` 的，先在油猴里卸掉旧脚本再装新的。
-4. 打开抖音或小红书，右下角出现 **DX** 小圆球就说明在工作。点它打开设置。
+4. 打开抖音，右下角出现 **DX** 小圆球就说明在工作。点它打开设置。
 
 有新版时 Tampermonkey 会自动更新。
 
@@ -35,8 +32,8 @@
 | 总开关 | 开 | 关掉后脚本什么都不做 |
 | 视频多线程 + 秒开 | 开 | 多节点并发下载视频，并预下后面几条 |
 | 自动最高画质 | 开 | 只在网站接口给出的画质里挑最高的，不会绕过任何权限 |
-| 净化页面（抖音） | 开 | 去掉左侧导航和顶栏，换成贴左边的细图标栏（搜索 / 推荐 / 关注 / 我的，底部通知 / 消息 / 头像）；打开首页或「精选」直接进推荐（每个标签页只跳一次） |
-| 图片换最快节点（小红书） | 开 | 测速选节点，慢图自动用第二快的节点补发 |
+| 去广告 | 开 | 推荐流里的广告直接删掉，漏网的自动划走 |
+| 净化页面 | 开 | 去掉左侧导航和顶栏，换成贴左边的细图标栏（搜索 / 推荐 / 关注 / 我的，底部通知 / 消息 / 头像）；打开首页或「精选」直接进推荐（每个标签页只跳一次） |
 | 并发线程 | 自动 | 自动会在 4–24 之间找吞吐最高的值；机器弱可以手动设 4 或 8 |
 | 预加载后面几条 | 2 | 0 = 不预下；大于 40 MB 的视频不预下 |
 | 内存缓存上限 | 300 MB | 下好的视频存在内存里，超过后先删最久没看的 |
@@ -49,7 +46,7 @@
 
 ### 视频
 
-两个站的网页视频都是整段 MP4（不是 B 站那种分段 DASH），每个视频的接口数据里给了 2–3 个不同 CDN 节点的地址。
+抖音网页视频是整段 MP4（不是 B 站那种分段 DASH），每个视频的接口数据里给了 2–3 个不同 CDN 节点的地址。
 
 - **多线程下载**：把文件切成 0.25–2 MB 的块，同时从几个节点并发下载；每个节点实时测速，慢的少分、坏的停用；
   某个连接卡住超过 4 秒就断开，剩下的部分从已收到的位置换节点续传；快下完时把最慢那块的后半段分给空闲连接（work stealing）。
@@ -58,21 +55,10 @@
   - 播放器直接给 `<video>` 设 MP4 地址时：如果这条已经下好，就把地址换成内存里的 `blob:` 副本（秒开，拖动也正常）；
     没下好就照常用原地址播，后台并发下载，原生加载跟不上（卡住或缓冲快见底）时，在同一时间点无缝切到副本。
     播放器读回 `src` / `currentSrc` 时看到的仍然是原地址。
-  - 播放器自己用 MediaSource 分段拉数据时（抖音的 DASH 模式、部分小红书视频）：第一次请求照常走网络，同时后台把整个文件并发拉下来，
+  - 播放器自己用 MediaSource 分段拉数据时（抖音的 DASH 模式）：第一次请求照常走网络，同时后台把整个文件并发拉下来，
     之后播放器要的每一段只要已经在内存里就直接给它。
 - **刷下一条秒开**：按接口里的顺序，当前视频开始播放后，预下后面 2 条。
-- **最高画质**：抖音接口里有 `bit_rate[]`（所有档位），脚本把最高的 MP4 档放进 `play_addr`，并只给 DASH 播放器留最高一档；
-  小红书把每个编码列表里最清楚的那个排到第一。
-
-### 小红书图片
-
-笔记图片的地址形如 `sns-webpic-*.xhscdn.com/<时间>/<签名>/<图片ID>!<样式>`。同一个 `<图片ID>!<样式>` 在另外十几个图片节点上也能取到，**字节完全相同**（实测同一张图大小、格式一致），只是从海外访问时快慢差别很大，而且和你的网络有关。所以脚本：
-
-1. 打开页面时用一张已显示的图同时测一遍所有节点，之后用页面上每张图的真实加载时间（Resource Timing）持续打分；
-2. 新图片发给当前最快、在途请求不多的节点（偶尔试试别的节点，保持排名准确）；
-3. 一张图过了一小会儿还没出来，就同时向第二快的节点再要一次，谁先到用谁；
-4. 节点出错就退回原地址；
-5. 接口刚返回的下一页封面、刚打开笔记的所有图片，提前在后台加载。
+- **最高画质**：抖音接口里有 `bit_rate[]`（所有档位），脚本把最高的 MP4 档放进 `play_addr`，并只给 DASH 播放器留最高一档。
 
 ## 它不会做什么
 
@@ -93,19 +79,18 @@
 
 ```text
 src/core/      下载内核（切块、调度、多节点）、视频缓存、fetch/XHR 钩子、<video> 地址钩子
-src/sites/     douyin.js、xhs.js（视频数据）、douyin-images.js（图集预下）、xhs-images.js（图片节点）
+src/sites/     douyin.js（视频数据、去广告）、douyin-images.js（图集预下）、douyin-clean.js（净化页面）
 src/ui/        设置面板（Shadow DOM，样式只用 Rakko Design token）
-scripts/       build.mjs（按站点拼成两个油猴脚本）、sync-design.sh（同步 vendor/rakko-design）
+scripts/       build.mjs（拼成油猴脚本）、sync-design.sh（同步 vendor/rakko-design）
 dev/           单元测试、CDP 端到端测试工具
 vendor/        Rakko Design 外来件，只能由 scripts/sync-design.sh 生成，不要手改
 ```
 
-- 构建：`node scripts/build.mjs [版本号]` → `user_scripts/douyin.user.js`、`user_scripts/xhs.user.js`
+- 构建：`node scripts/build.mjs [版本号]` → `user_scripts/douyin.user.js`
 - 单元测试：`node dev/run-tests.js`
 - 端到端（需要本机有开着 CDP 9222 的 Chrome）：
-  - `node dev/inject.mjs <网址> [秒数]`：按网址选对应站点的构建产物注入并打开页面，打印诊断报告；
+  - `node dev/inject.mjs <网址> [秒数]`：把构建产物注入并打开页面，打印诊断报告；
   - `node dev/hit-test.mjs`、`node dev/feed-test.mjs`：抖音秒开 / 刷下一条；
-  - `node dev/image-bench.mjs [轮数]`：小红书封面开关对比；`node dev/note-bench.mjs <笔记网址…>`：轮播图。
 
 ## 协议
 

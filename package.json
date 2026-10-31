@@ -1,7 +1,7 @@
 {
-  "name": "douyinxhs-thread-ripper",
+  "name": "douyin-thread-ripper",
   "private": true,
-  "description": "抖音 / 小红书网页版加速油猴脚本",
+  "description": "抖音网页版加速油猴脚本",
   "license": "MIT",
   "type": "commonjs",
   "scripts": {

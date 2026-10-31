@@ -1,12 +1,12 @@
-// Zero-dependency build: concatenates src/ into one userscript per site.
-//   node scripts/build.mjs [version]     → user_scripts/douyin.user.js, user_scripts/xhs.user.js
+// Zero-dependency build: concatenates src/ into one userscript.
+//   node scripts/build.mjs [version]     → user_scripts/douyin.user.js
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const REPO = "KurisuRakko/DouyinXHS-Thread-Ripper";
+const REPO = "KurisuRakko/Douyin-Thread-Ripper";
 const raw = (file) => `https://raw.githubusercontent.com/${REPO}/main/user_scripts/${file}`;
 
 // Order matters: later files use what earlier ones define on DXTR.
@@ -20,7 +20,7 @@ const CORE = [
 ];
 const TAIL = ["src/ui/panel.js", "src/main.js"];
 
-// One userscript per site: only that site's modules, one @match.
+// The Douyin userscript: its own site modules, one @match.
 export const TARGETS = {
   douyin: {
     file: "douyin.user.js",
@@ -28,13 +28,6 @@ export const TARGETS = {
     description: "抖音网页版：多线程多节点下载视频、刷下一条秒开、自动最高画质。不改网站播放器代码。",
     match: "https://www.douyin.com/*",
     files: [...CORE, "src/sites/douyin.js", "src/sites/douyin-images.js", "src/sites/douyin-clean.js", ...TAIL]
-  },
-  xhs: {
-    file: "xhs.user.js",
-    name: "小红书 线程撕裂者",
-    description: "小红书网页版：多线程多节点下载视频、自动最高画质、图片测速换最快节点。不改网站播放器代码。",
-    match: "https://www.xiaohongshu.com/*",
-    files: [...CORE, "src/sites/xhs.js", "src/sites/xhs-images.js", ...TAIL]
   }
 };
 

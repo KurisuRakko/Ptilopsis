@@ -14,7 +14,6 @@ DXTR.settings = (() => {
     prefetchMaxMB: 40,      // skip prefetching files bigger than this
     maxFileMB: 200,         // never take over files bigger than this
     cacheMB: 300,           // total size of finished videos kept in memory
-    images: true,           // Xiaohongshu image node racing + prefetch
     adblock: true,          // Douyin: drop ads from the feed
     clean: true,            // Douyin: slim left rail instead of the navigation + top bar, open on the feed
     floatingButton: true,
@@ -34,7 +33,6 @@ DXTR.settings = (() => {
       prefetchMaxMB: num(s.prefetchMaxMB, 5, 500, DEFAULTS.prefetchMaxMB),
       maxFileMB: num(s.maxFileMB, 20, 1000, DEFAULTS.maxFileMB),
       cacheMB: num(s.cacheMB, 50, 2000, DEFAULTS.cacheMB),
-      images: s.images !== false,
       adblock: s.adblock !== false,
       clean: s.clean !== false,
       floatingButton: s.floatingButton !== false,

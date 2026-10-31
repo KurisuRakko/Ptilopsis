@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        抖音 线程撕裂者
-// @namespace   https://github.com/KurisuRakko/DouyinXHS-Thread-Ripper
+// @namespace   https://github.com/KurisuRakko/Douyin-Thread-Ripper
 // @version     0.4.0
 // @description 抖音网页版：多线程多节点下载视频、刷下一条秒开、自动最高画质。不改网站播放器代码。
 // @author      Rakko
 // @license     MIT
-// @homepageURL https://github.com/KurisuRakko/DouyinXHS-Thread-Ripper
-// @supportURL  https://github.com/KurisuRakko/DouyinXHS-Thread-Ripper/issues
-// @updateURL   https://raw.githubusercontent.com/KurisuRakko/DouyinXHS-Thread-Ripper/main/user_scripts/douyin.user.js
-// @downloadURL https://raw.githubusercontent.com/KurisuRakko/DouyinXHS-Thread-Ripper/main/user_scripts/douyin.user.js
+// @homepageURL https://github.com/KurisuRakko/Douyin-Thread-Ripper
+// @supportURL  https://github.com/KurisuRakko/Douyin-Thread-Ripper/issues
+// @updateURL   https://raw.githubusercontent.com/KurisuRakko/Douyin-Thread-Ripper/main/user_scripts/douyin.user.js
+// @downloadURL https://raw.githubusercontent.com/KurisuRakko/Douyin-Thread-Ripper/main/user_scripts/douyin.user.js
 // @match       https://www.douyin.com/*
 // @run-at      document-start
 // @grant       none
@@ -38,7 +38,6 @@ DXTR.settings = (() => {
     prefetchMaxMB: 40,      // skip prefetching files bigger than this
     maxFileMB: 200,         // never take over files bigger than this
     cacheMB: 300,           // total size of finished videos kept in memory
-    images: true,           // Xiaohongshu image node racing + prefetch
     adblock: true,          // Douyin: drop ads from the feed
     clean: true,            // Douyin: slim left rail instead of the navigation + top bar, open on the feed
     floatingButton: true,
@@ -58,7 +57,6 @@ DXTR.settings = (() => {
       prefetchMaxMB: num(s.prefetchMaxMB, 5, 500, DEFAULTS.prefetchMaxMB),
       maxFileMB: num(s.maxFileMB, 20, 1000, DEFAULTS.maxFileMB),
       cacheMB: num(s.cacheMB, 50, 2000, DEFAULTS.cacheMB),
-      images: s.images !== false,
       adblock: s.adblock !== false,
       clean: s.clean !== false,
       floatingButton: s.floatingButton !== false,
@@ -1867,12 +1865,10 @@ hr { border: 0; border-top: 1px solid var(--color-border); margin: 8px 0; }
       lines.push(`${n.host.split(".")[0]}  ${(n.speed * 8 / 1000).toFixed(0)} Mbps`);
     }
     for (const r of v.records.slice(-4)) lines.push(`${r.state === "ready" ? "✓" : r.state === "failed" ? "✗" : `${Math.round(r.progress * 100)}%`} ${r.mb}MB ${r.label}`);
-    if (DXTR.site === "douyin") { const a = DXTR.sites.douyin.adStats(); lines.push(`广告 已删 ${a.removed}  已划走 ${a.skipped}`); const p = DXTR.douyinImages.stats(); lines.push(`图集 已预下 ${p.cached}  秒开 ${p.hits}  未命中 ${p.misses}  排队 ${p.queued}`); }
-    const img = DXTR.xhsImages && DXTR.site === "xhs" ? DXTR.xhsImages.stats() : null;
-    if (img) {
-      lines.push(`图片 改写 ${img.rewritten}  补发 ${img.hedged}/${img.hedgeWins}胜  回退 ${img.fallbacks}  预取 ${img.prefetched}`);
-      for (const n of img.nodes.slice(0, 4)) lines.push(`  ${n.node.split(".")[0]}  ${n.samples ? `${n.ms} ms` : "未测"}  ×${n.samples}`);
-    }
+    const a = DXTR.sites.douyin.adStats();
+    lines.push(`广告 已删 ${a.removed}  已划走 ${a.skipped}`);
+    const p = DXTR.douyinImages.stats();
+    lines.push(`图集 已预下 ${p.cached}  秒开 ${p.hits}  未命中 ${p.misses}  排队 ${p.queued}`);
     return lines.join("\n");
   }
 
@@ -1887,14 +1883,13 @@ hr { border: 0; border-top: 1px solid var(--color-border); margin: 8px 0; }
     if (!open) return;
     panel.replaceChildren(
       el("h2", {}, "线程撕裂者"),
-      el("p", { class: "sub" }, `${DXTR.site === "xhs" ? "小红书" : "抖音"} · v${DXTR.version} · 改动刷新页面后完全生效`),
+      el("p", { class: "sub" }, `抖音 · v${DXTR.version} · 改动刷新页面后完全生效`),
       toggle("enabled", "总开关"),
       toggle("video", "视频多线程 + 秒开", "多节点并发下载，提前下好后面几条"),
       toggle("quality", "自动最高画质", "只在网站给出的画质里挑", () => S.get().quality === "best",
         () => S.set({ quality: S.get().quality === "best" ? "site" : "best" })),
-      ...(DXTR.site === "xhs" ? [toggle("images", "图片换最快节点", "测速选节点，慢图自动补发")] : []),
-      ...(DXTR.site === "douyin" ? [toggle("adblock", "去广告", "推荐流里的广告直接删掉，漏网的自动划走"),
-        toggle("clean", "净化页面", "去掉左侧导航和顶栏，换成细图标栏；打开直接进推荐")] : []),
+      toggle("adblock", "去广告", "推荐流里的广告直接删掉，漏网的自动划走"),
+      toggle("clean", "净化页面", "去掉左侧导航和顶栏，换成细图标栏；打开直接进推荐"),
       choice("threads", "并发线程", [["auto", "自动"], ...S.THREAD_CHOICES.map((n) => [n, String(n)])]),
       choice("prefetchNext", "预加载后面几条", [0, 1, 2, 3, 4, 5].map((n) => [n, String(n)])),
       choice("cacheMB", "内存缓存上限", [[150, "150 MB"], [300, "300 MB"], [600, "600 MB"], [1000, "1 GB"]]),
@@ -1911,9 +1906,9 @@ hr { border: 0; border-top: 1px solid var(--color-border); margin: 8px 0; }
     try { await navigator.clipboard.writeText(text); } catch (_error) { console.log(text); }
   }
 
+  // Douyin's page is always dark.
   function theme() {
-    const dark = DXTR.site === "douyin" || matchMedia("(prefers-color-scheme: dark)").matches;
-    host.setAttribute("data-theme", dark ? "dark" : "light");
+    host.setAttribute("data-theme", "dark");
   }
 
   function mount() {
@@ -1959,17 +1954,16 @@ hr { border: 0; border-top: 1px solid var(--color-border); margin: 8px 0; }
 })();
 
 // ---- src/main.js
-// Entry point: pick the site module, install the hooks, expose the debug report.
+// Entry point: install the Douyin hooks, expose the debug report.
 (() => {
   "use strict";
   const host = location.hostname;
-  const site = /(^|\.)douyin\.com$/.test(host) ? "douyin" : /(^|\.)xiaohongshu\.com$/.test(host) ? "xhs" : "";
-  if (!site || !DXTR.sites[site]) return; // each build carries only its own site module
+  const site = /(^|\.)douyin\.com$/.test(host) ? "douyin" : "";
+  if (!site || !DXTR.sites[site]) return;
   DXTR.site = site;
   DXTR.sites[site].install();
-  if (site === "xhs") DXTR.xhsImages?.install();
-  if (site === "douyin") DXTR.douyinImages?.install();
-  if (site === "douyin") DXTR.douyinClean?.install();
+  DXTR.douyinImages?.install();
+  DXTR.douyinClean?.install();
   DXTR.panel?.install();
 
   window.__dxtrDebug = {
@@ -1986,9 +1980,8 @@ hr { border: 0; border-top: 1px solid var(--color-border); margin: 8px 0; }
         videos: DXTR.videos.snapshot(),
         media: DXTR.mediaHook.stats(),
         mseFetch: DXTR.mediaFetch.stats(),
-        images: DXTR.xhsImages?.stats?.() || null,
-        ads: site === "douyin" ? DXTR.sites.douyin?.adStats() : null,
-        pictures: site === "douyin" ? DXTR.douyinImages?.stats() : null,
+        ads: DXTR.sites.douyin?.adStats(),
+        pictures: DXTR.douyinImages?.stats(),
         log: DXTR.log.lines().slice(-60)
       }, null, 2);
     }

@@ -168,11 +168,10 @@ test("tryRead serves finished bytes before the whole file is done", async () => 
 });
 
 // ---- sites --------------------------------------------------------------------------------
-const SITE = [...CORE, "src/core/video-cache.js", "src/sites/douyin.js", "src/sites/xhs.js"];
+const SITE = [...CORE, "src/core/video-cache.js", "src/sites/douyin.js"];
 function loadSites() {
   const DXTR = loadModules(SITE);
   DXTR.videos.addUrlKey(DXTR.sites.douyin.urlKey);
-  DXTR.videos.addUrlKey(DXTR.sites.xhs.urlKey);
   return DXTR;
 }
 
@@ -201,17 +200,6 @@ test("douyin: quality=site leaves the data alone", () => {
   DXTR.sites.douyin.walk(data, 0);
   assert.equal(JSON.stringify(data.aweme_detail.video.play_addr), before);
   assert.ok(data.aweme_detail.video.bit_rate.length > 2);
-});
-
-test("xhs: stream files registered, best first in each list, no list removed", () => {
-  const DXTR = loadSites();
-  const mk = (h, br, n) => ({ height: h, width: h * 9 / 16, videoBitrate: br, size: 1000, masterUrl: `http://sns-video-bd.xhscdn.com/stream/1/110/${n}.mp4`, backupUrls: [`https://sns-video-hw.xhscdn.com/stream/1/110/${n}.mp4?sign=x`] });
-  const note = { title: "t", video: { media: { stream: { EF4: [mk(720, 1000, "a"), mk(1080, 2000, "b")], EF5: [mk(1080, 1500, "c")], EF6: [] } } } };
-  DXTR.sites.xhs.walk({ data: { items: [{ note_card: note }] } }, 0, "");
-  const st = note.video.media.stream;
-  assert.equal(st.EF4[0].height, 1080);
-  assert.equal(st.EF5.length, 1, "lists are never emptied (codec names are opaque)");
-  assert.ok(DXTR.videos.lookup("https://sns-video-al.xhscdn.com/stream/1/110/b.mp4?other=1"), "any node, any query");
 });
 
 test("douyin: ads are removed from feed lists, normal videos kept", () => {
@@ -253,19 +241,6 @@ test("douyin: picture posts join the feed and queue their pictures", () => {
   const cur = DXTR.videos.lookup(JSON.parse(read("dev/fixtures/douyin-detail.json")).aweme_detail.video.bit_rate[0].play_addr.url_list[0]);
   DXTR.videos.prefetchWindowOf("dypic:9");
   assert.ok(DXTR.videos.isCurrent(cur), "video still current");
-});
-
-test("xhs: live photo clips are not taken over", () => {
-  const DXTR = loadSites();
-  const clip = { height: 1440, width: 1080, size: 900000, masterUrl: "http://sns-video-bd.xhscdn.com/stream/1/live/clip.mp4", backupUrls: [] };
-  const state = { note: { noteDetailMap: { n1: { note: { title: "live", imageList: [
-    { urlDefault: "https://sns-webpic-qc.xhscdn.com/1/ab/tok!nd_dft_wlteh_webp_3", livePhoto: true, stream: { h264: [clip], h265: [] } }
-  ] } } } } };
-  const apiItem = { image_list: [{ url_default: "x", live_photo: true, stream: { h264: [{ ...clip, masterUrl: "http://sns-video-bd.xhscdn.com/stream/1/live/clip2.mp4" }] } }] };
-  DXTR.sites.xhs.walk(state.note.noteDetailMap, 0, "");
-  DXTR.sites.xhs.walk(apiItem, 0, "");
-  assert.equal(DXTR.videos.lookup("https://sns-video-bd.xhscdn.com/stream/1/live/clip.mp4"), null);
-  assert.equal(DXTR.videos.lookup("https://sns-video-bd.xhscdn.com/stream/1/live/clip2.mp4"), null);
 });
 
 test("cache eviction never revokes the blob a <video> is playing", async () => {
@@ -327,21 +302,17 @@ test("settings: clean defaults on, can be turned off", () => {
   assert.equal(S.normalize({}).clean, true);
 });
 
-test("build: one userscript per site, each with only its own site modules", async () => {
+test("build: one Douyin userscript with only Douyin site modules", async () => {
   const { build, TARGETS } = await import(path.join(ROOT, "scripts/build.mjs"));
-  const own = { douyin: "www.douyin.com", xhs: "www.xiaohongshu.com" };
-  assert.deepEqual(Object.keys(TARGETS).sort(), ["douyin", "xhs"]);
-  for (const [target, other] of [["douyin", "xhs"], ["xhs", "douyin"]]) {
-    const out = build(target, "test");
-    const sites = [...out.matchAll(/^\/\/ ---- src\/sites\/(\S+)$/gm)].map((m) => m[1]);
-    assert.ok(sites.length > 0, `${target}: has site modules`);
-    assert.ok(sites.every((f) => f.startsWith(target)), `${target}: only its own site modules (${sites})`);
-    assert.ok(!out.includes(`// ---- src/sites/${other}`), `${target}: no ${other} module`);
-    const matches = [...out.matchAll(/^\/\/ @match\s+(\S+)$/gm)].map((m) => m[1]);
-    assert.deepEqual(matches, [`https://${own[target]}/*`]);
-    assert.ok(out.includes(`/user_scripts/${TARGETS[target].file}`), `${target}: update URL points at its own file`);
-    new Function(out); // parses
-  }
+  assert.deepEqual(Object.keys(TARGETS), ["douyin"]);
+  const out = build("douyin", "test");
+  const sites = [...out.matchAll(/^\/\/ ---- src\/sites\/(\S+)$/gm)].map((m) => m[1]);
+  assert.ok(sites.length > 0, "has site modules");
+  assert.ok(sites.every((f) => f.startsWith("douyin")), `only Douyin site modules (${sites})`);
+  const matches = [...out.matchAll(/^\/\/ @match\s+(\S+)$/gm)].map((m) => m[1]);
+  assert.deepEqual(matches, ["https://www.douyin.com/*"]);
+  assert.ok(out.includes("https://raw.githubusercontent.com/KurisuRakko/Douyin-Thread-Ripper/main/user_scripts/douyin.user.js"), "update URL points at this repo");
+  new Function(out); // parses
 });
 
 // ---- run ----------------------------------------------------------------------------------
