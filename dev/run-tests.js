@@ -267,19 +267,22 @@ test("cache eviction never revokes the blob a <video> is playing", async () => {
   assert.equal(V.record("b"), null, "B was evicted instead");
 });
 
-test("douyin clean: only the bare home page and 精选 go to the feed, once per tab", () => {
+test("douyin clean: only the bare home page and 精选 go to the feed, not again within 2 s", () => {
   const C = loadModules(["src/core/settings.js", "src/sites/douyin-clean.js"]).douyinClean;
   const feed = "https://www.douyin.com/?recommend=1&from_nav=1";
   for (const href of ["https://www.douyin.com/", "https://www.douyin.com", "https://www.douyin.com/jingxuan",
     "https://www.douyin.com/jingxuan/", "https://www.douyin.com/jingxuan?from_nav=1", "https://douyin.com/"]) {
-    assert.equal(C.recommendTarget(href, false), feed, href);
-    assert.equal(C.recommendTarget(href, true), "", `${href} (already jumped)`);
+    assert.equal(C.recommendTarget(href, 0, 1_000_000), feed, href);
+    assert.equal(C.recommendTarget(href, 999_000, 1_000_000), "", `${href} (jumped 1 s ago)`);
+    assert.equal(C.recommendTarget(href, 998_001, 1_000_000), "", `${href} (jumped 1.999 s ago)`);
+    assert.equal(C.recommendTarget(href, 998_000, 1_000_000), feed, `${href} (jumped 2 s ago)`);
   }
+  assert.equal(C.recommendTarget("https://www.douyin.com/", Infinity), "", "no sessionStorage: never");
   for (const href of ["https://www.douyin.com/?recommend=1", "https://www.douyin.com/?recommend=1&from_nav=1",
     "https://www.douyin.com/jingxuan?modal_id=7701695837625191695", "https://www.douyin.com/?modal_id=1",
     "https://www.douyin.com/follow", "https://www.douyin.com/user/self", "https://www.douyin.com/video/1",
     "https://www.douyin.com/jingxuan/game", "https://www.example.com/", "not a url"]) {
-    assert.equal(C.recommendTarget(href, false), "", href);
+    assert.equal(C.recommendTarget(href, 0, 1_000_000), "", href);
   }
 });
 
@@ -295,11 +298,13 @@ test("douyin clean: search address, query read back, active rail entry", () => {
   assert.equal(C.activeTab("https://www.douyin.com/user/MS4wLjAB"), "");
 });
 
-test("settings: clean defaults on, can be turned off", () => {
+test("settings: clean and hideNavArrows default on, can be turned off", () => {
   const S = loadModules(["src/core/settings.js"]).settings;
-  assert.equal(S.get().clean, true);
-  assert.equal(S.normalize({ clean: false }).clean, false);
-  assert.equal(S.normalize({}).clean, true);
+  for (const key of ["clean", "hideNavArrows"]) {
+    assert.equal(S.get()[key], true, key);
+    assert.equal(S.normalize({ [key]: false })[key], false, key);
+    assert.equal(S.normalize({})[key], true, key);
+  }
 });
 
 test("build: one Douyin userscript with only Douyin site modules", async () => {

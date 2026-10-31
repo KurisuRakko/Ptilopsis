@@ -103,6 +103,7 @@ hr { border: 0; border-top: 1px solid var(--color-border); margin: 8px 0; }
         () => S.set({ quality: S.get().quality === "best" ? "site" : "best" })),
       toggle("adblock", "去广告", "推荐流里的广告直接删掉，漏网的自动划走"),
       toggle("clean", "净化页面", "去掉左侧导航和顶栏，换成细图标栏；打开直接进推荐"),
+      toggle("hideNavArrows", "隐藏右侧上下按钮", "推荐流右边切上一条/下一条的那两个箭头"),
       choice("threads", "并发线程", [["auto", "自动"], ...S.THREAD_CHOICES.map((n) => [n, String(n)])]),
       choice("prefetchNext", "预加载后面几条", [0, 1, 2, 3, 4, 5].map((n) => [n, String(n)])),
       choice("cacheMB", "内存缓存上限", [[150, "150 MB"], [300, "300 MB"], [600, "600 MB"], [1000, "1 GB"]]),

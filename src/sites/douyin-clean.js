@@ -10,6 +10,9 @@
 // (with its own input) at the top of the rail, and on pages without the site's navigation
 // (the search results page) a fallback rail with plain links.
 //
+// Separately from clean mode (own setting), the up/down buttons right of the recommend feed
+// can be hidden; the keyboard ↑/↓ keys keep switching videos.
+//
 // Selectors use ids, data-e2e, the site's semantic class names (tab-recommend,
 // isCssFullScreen) and structure only, never the hashed class names, which change with
 // every site release.
@@ -17,7 +20,8 @@ DXTR.douyinClean = (() => {
   "use strict";
 
   const RAIL = 56;
-  const JUMPED_KEY = "dxtr.cleanJumped";
+  const JUMPED_KEY = "dxtr.cleanJumpedAt";
+  const JUMP_GAP_MS = 2000;
   // Same address as the site's own 推荐 link.
   const RECOMMEND_URL = "https://www.douyin.com/?recommend=1&from_nav=1";
   const KEEP_TABS = ".tab-recommend, .tab-follow, .tab-user_self";
@@ -73,6 +77,9 @@ html[data-dxtr-bare] #search-toolbar-container { left: ${RAIL + 30}px !important
 html:has(.isCssFullScreen) dxtr-rail { display: none !important; }
 `;
 
+  // The pill with the previous / next buttons right of the recommend feed (an xgplayer plugin).
+  const ARROWS_CSS = `.xgplayer-playswitch:has([data-e2e="video-switch-next-arrow"]) { display: none !important; }`;
+
   const RAIL_CSS = `
 :host { all: initial; position: fixed; left: 0; top: 0; width: ${RAIL}px; height: ${RAIL}px; z-index: 501; font-family: var(--font-sans); color: var(--color-neutral-9); }
 :host([data-full]) { height: 100vh; background: var(--color-neutral-1); }
@@ -116,10 +123,11 @@ input:focus { border-color: var(--color-accent); }
 
   // Where to send this page instead, or "" to leave it. Only the bare home page and 精选
   // are sent to the feed: query strings other than from_* (a shared ?modal_id= video, an
-  // explicit ?recommend=1) mean the page was asked for on purpose. `jumped` = this tab was
-  // already sent once, so a logged-out visitor whom the site bounces back stays put.
-  function recommendTarget(href, jumped) {
-    if (jumped) return "";
+  // explicit ?recommend=1) mean the page was asked for on purpose. `lastJump` = when this tab
+  // was last sent (ms, 0 = never): within JUMP_GAP_MS of it the page stays put, so a visitor
+  // whom the site bounces straight back does not loop.
+  function recommendTarget(href, lastJump, now = Date.now()) {
+    if (now - lastJump < JUMP_GAP_MS) return "";
     let url;
     try { url = new URL(href); } catch (_error) { return ""; }
     if (!/(^|\.)douyin\.com$/.test(url.hostname)) return "";
@@ -151,14 +159,15 @@ input:focus { border-color: var(--color-accent); }
     return "";
   }
 
-  const jumped = () => { try { return sessionStorage.getItem(JUMPED_KEY) === "1"; } catch (_error) { return true; } };
+  // Without sessionStorage there is no loop guard, so never jump.
+  const lastJump = () => { try { return Number(sessionStorage.getItem(JUMPED_KEY)) || 0; } catch (_error) { return Infinity; } };
 
   // Send the page to the feed if it should go. Inside the app the site's own 推荐 link is
   // used (no reload); at document-start there is nothing to click yet.
   function jumpIfNeeded(useLink) {
-    const target = recommendTarget(location.href, jumped());
+    const target = recommendTarget(location.href, lastJump());
     if (!target) return false;
-    try { sessionStorage.setItem(JUMPED_KEY, "1"); } catch (_error) { return false; }
+    try { sessionStorage.setItem(JUMPED_KEY, String(Date.now())); } catch (_error) { return false; }
     const link = useLink && document.querySelector(".tab-recommend a");
     DXTR.log("净化：跳到推荐", location.pathname);
     if (link) link.click();
@@ -187,17 +196,18 @@ input:focus { border-color: var(--color-accent); }
   let input = null;
   let searchButton = null;
 
-  function addStyle() {
-    style = document.createElement("style");
-    style.id = "dxtr-clean";
-    style.textContent = PAGE_CSS;
+  function addStyle(id, css) {
+    const node = document.createElement("style");
+    node.id = id;
+    node.textContent = css;
     // At document-start there may be no <html> element yet.
-    if (document.documentElement) { document.documentElement.append(style); return; }
+    if (document.documentElement) { document.documentElement.append(node); return node; }
     new MutationObserver((_records, observer) => {
       if (!document.documentElement) return;
       observer.disconnect();
-      document.documentElement.append(style);
+      document.documentElement.append(node);
     }).observe(document, { childList: true });
+    return node;
   }
 
   function search(raw) {
@@ -303,9 +313,11 @@ input:focus { border-color: var(--color-accent); }
 
   function install() {
     const s = DXTR.settings.get();
-    if (!s.enabled || !s.clean) return;
+    if (!s.enabled) return;
+    if (s.hideNavArrows) addStyle("dxtr-arrows", ARROWS_CSS);
+    if (!s.clean) return;
     if (jumpIfNeeded(false)) return;
-    addStyle();
+    style = addStyle("dxtr-clean", PAGE_CSS);
     watchHistory();
     for (const type of GUARDED) window.addEventListener(type, guard, true);
     if (document.body) mount();
