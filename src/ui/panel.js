@@ -13,13 +13,14 @@ DXTR.panel = (() => {
 :host { all: initial; position: fixed; right: 16px; z-index: 2147483000; font-family: var(--font-sans); color: var(--color-neutral-9); }
 * { box-sizing: border-box; }
 .ball {
-  width: 40px; height: 40px; border-radius: 9999px; border: 0; cursor: pointer;
+  width: 40px; height: 40px; border-radius: 9999px; border: 0; padding: 0; background: transparent; box-shadow: var(--shadow-whisper); cursor: pointer;
   display: grid; place-items: center; color: var(--color-neutral-9);
   font: 600 12px/1 var(--font-sans);
 }
-.ball[data-glass] { background: color-mix(in srgb, var(--color-paper) var(--glass-panel-opacity), transparent); box-shadow: var(--shadow-whisper), inset 0 0 0 1px var(--color-border); }
+.ball .icon { width: 100%; height: 100%; border-radius: 9999px; display: block; pointer-events: none; }
 .ball .dot { position: absolute; right: 7px; top: 7px; width: 6px; height: 6px; border-radius: 9999px; background: var(--color-success); }
 .ball[data-off] .dot { background: var(--color-neutral-5); }
+.ball[data-off] .icon { filter: grayscale(1); opacity: .6; }
 .panel {
   position: absolute; right: 0; bottom: 48px; width: 300px; max-height: min(560px, 80vh); overflow: auto;
   border-radius: 16px; padding: 14px 14px 10px;
@@ -133,7 +134,7 @@ hr { border: 0; border-top: 1px solid var(--color-border); margin: 8px 0; }
     root = host.attachShadow({ mode: "closed" });
     const style = document.createElement("style");
     style.textContent = DXTR.designCss + CSS;
-    const ball = el("button", { class: "ball", "data-glass": "panel", "data-ripple": true, title: "Ptilopsis", "aria-label": "Ptilopsis 设置" }, "DX", el("span", { class: "dot" }));
+    const ball = el("button", { class: "ball", "data-ripple": true, title: "Ptilopsis", "aria-label": "Ptilopsis 设置" }, el("img", { class: "icon", src: DXTR.icon, alt: "" }), el("span", { class: "dot" }));
     let drag = null;
     ball.addEventListener("pointerdown", (e) => { drag = { y: e.clientY, moved: false }; ball.setPointerCapture(e.pointerId); });
     ball.addEventListener("pointermove", (e) => {

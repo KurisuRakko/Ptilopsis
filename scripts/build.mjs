@@ -70,7 +70,8 @@ export function build(target, ver = version()) {
   const meta = ["// ==UserScript==", ...header.map(([k, v]) => `// @${k.padEnd(width)}${v}`.trimEnd()), "// ==/UserScript=="].join("\n");
   const body = t.files.map((f) => `// ---- ${f}\n${readFileSync(join(ROOT, f), "utf8")}`).join("\n");
   const css = JSON.stringify(designCss());
-  return `${meta}\n\n(function () {\n"use strict";\nif (window.__dxtrLoaded) return;\nwindow.__dxtrLoaded = true;\nconst DXTR = { version: ${JSON.stringify(ver)}, sites: {}, designCss: ${css} };\n${body}\n})();\n`;
+  const icon = JSON.stringify("data:image/webp;base64," + readFileSync(join(ROOT, "assets/ball.webp")).toString("base64"));
+  return `${meta}\n\n(function () {\n"use strict";\nif (window.__dxtrLoaded) return;\nwindow.__dxtrLoaded = true;\nconst DXTR = { version: ${JSON.stringify(ver)}, sites: {}, designCss: ${css}, icon: ${icon} };\n${body}\n})();\n`;
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

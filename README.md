@@ -1,3 +1,5 @@
+<img src="assets/icon.png" width="96" alt="">
+
 # Ptilopsis · 抖音网页优化
 
 适用于桌面浏览器的抖音网页版用户脚本（Tampermonkey / Violentmonkey），用于在海外网络环境下加快视频加载。设计思路参考
