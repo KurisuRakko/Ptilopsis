@@ -1,4 +1,4 @@
-# Texas · 抖音网页优化
+# Ptilopsis · 抖音网页优化
 
 适用于桌面浏览器的抖音网页版用户脚本（Tampermonkey / Violentmonkey），用于在海外网络环境下加快视频加载。设计思路参考
 [MrTangLuyao/Bilibili-thread-ripper](https://github.com/MrTangLuyao/Bilibili-thread-ripper)（多连接、多节点并发下载），代码针对抖音独立实现。
@@ -18,7 +18,7 @@
 
 1. 在 Chrome 中安装 [Tampermonkey](https://www.tampermonkey.net/) 或 [Violentmonkey](https://violentmonkey.github.io/)。
 2. **Chrome 必需步骤**：打开 `chrome://extensions`，进入 Tampermonkey（或 Violentmonkey）的「详情」页，启用 **「允许运行用户脚本」**（旧版 Chrome 需启用右上角的「开发者模式」）。未启用时脚本不会运行。
-3. 安装脚本：[**douyin.user.js**](https://raw.githubusercontent.com/KurisuRakko/Texas/main/user_scripts/douyin.user.js)
+3. 安装脚本：[**douyin.user.js**](https://raw.githubusercontent.com/KurisuRakko/Ptilopsis/main/user_scripts/douyin.user.js)
 
    如已安装旧版 `dxtr.user.js`，请先在脚本管理器中将其卸载，再安装本脚本。
 4. 打开抖音网页版，页面右下角显示 **DX** 悬浮按钮即表示脚本已运行。点击该按钮可打开设置面板。

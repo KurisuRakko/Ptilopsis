@@ -316,7 +316,7 @@ test("build: one Douyin userscript with only Douyin site modules", async () => {
   assert.ok(sites.every((f) => f.startsWith("douyin")), `only Douyin site modules (${sites})`);
   const matches = [...out.matchAll(/^\/\/ @match\s+(\S+)$/gm)].map((m) => m[1]);
   assert.deepEqual(matches, ["https://www.douyin.com/*"]);
-  assert.ok(out.includes("https://raw.githubusercontent.com/KurisuRakko/Texas/main/user_scripts/douyin.user.js"), "update URL points at this repo");
+  assert.ok(out.includes("https://raw.githubusercontent.com/KurisuRakko/Ptilopsis/main/user_scripts/douyin.user.js"), "update URL points at this repo");
   new Function(out); // parses
 });
 

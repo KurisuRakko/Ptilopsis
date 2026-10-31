@@ -95,7 +95,7 @@ hr { border: 0; border-top: 1px solid var(--color-border); margin: 8px 0; }
     panel.hidden = !open;
     if (!open) return;
     panel.replaceChildren(
-      el("h2", {}, "Texas"),
+      el("h2", {}, "Ptilopsis"),
       el("p", { class: "sub" }, `抖音 · v${DXTR.version} · 设置更改将在页面刷新后生效。`),
       toggle("enabled", "启用脚本"),
       toggle("video", "多线程下载与即时播放", "从多个 CDN 节点并发下载视频，并预加载后续视频"),
@@ -133,7 +133,7 @@ hr { border: 0; border-top: 1px solid var(--color-border); margin: 8px 0; }
     root = host.attachShadow({ mode: "closed" });
     const style = document.createElement("style");
     style.textContent = DXTR.designCss + CSS;
-    const ball = el("button", { class: "ball", "data-glass": "panel", "data-ripple": true, title: "Texas", "aria-label": "Texas 设置" }, "DX", el("span", { class: "dot" }));
+    const ball = el("button", { class: "ball", "data-glass": "panel", "data-ripple": true, title: "Ptilopsis", "aria-label": "Ptilopsis 设置" }, "DX", el("span", { class: "dot" }));
     let drag = null;
     ball.addEventListener("pointerdown", (e) => { drag = { y: e.clientY, moved: false }; ball.setPointerCapture(e.pointerId); });
     ball.addEventListener("pointermove", (e) => {
