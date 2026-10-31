@@ -72,16 +72,16 @@ hr { border: 0; border-top: 1px solid var(--color-border); margin: 8px 0; }
     const d = DXTR.downloader.stats();
     const v = DXTR.videos.snapshot();
     const lines = [];
-    lines.push(`线程 ${d.inflight}/${d.limit}  已下载 ${(d.totalBytes / 1048576).toFixed(1)} MB`);
-    lines.push(`秒开命中 ${v.hits}  未命中 ${v.misses}  切换 ${DXTR.mediaHook.stats().swaps}  内存应答 ${DXTR.mediaFetch.stats().served}`);
+    lines.push(`活动线程 ${d.inflight}/${d.limit}  累计下载 ${(d.totalBytes / 1048576).toFixed(1)} MB`);
+    lines.push(`缓存命中 ${v.hits}  未命中 ${v.misses}  副本切换 ${DXTR.mediaHook.stats().swaps}  内存响应 ${DXTR.mediaFetch.stats().served}`);
     for (const n of [...DXTR.downloader.nodes.values()].filter((n) => n.ok).sort((a, b) => b.speed - a.speed).slice(0, 4)) {
       lines.push(`${n.host.split(".")[0]}  ${(n.speed * 8 / 1000).toFixed(0)} Mbps`);
     }
     for (const r of v.records.slice(-4)) lines.push(`${r.state === "ready" ? "✓" : r.state === "failed" ? "✗" : `${Math.round(r.progress * 100)}%`} ${r.mb}MB ${r.label}`);
     const a = DXTR.sites.douyin.adStats();
-    lines.push(`广告 已删 ${a.removed}  已划走 ${a.skipped}`);
+    lines.push(`广告 已移除 ${a.removed}  已跳过 ${a.skipped}`);
     const p = DXTR.douyinImages.stats();
-    lines.push(`图集 已预下 ${p.cached}  秒开 ${p.hits}  未命中 ${p.misses}  排队 ${p.queued}`);
+    lines.push(`图集 已预加载 ${p.cached}  命中 ${p.hits}  未命中 ${p.misses}  队列 ${p.queued}`);
     return lines.join("\n");
   }
 
@@ -96,22 +96,22 @@ hr { border: 0; border-top: 1px solid var(--color-border); margin: 8px 0; }
     if (!open) return;
     panel.replaceChildren(
       el("h2", {}, "线程撕裂者"),
-      el("p", { class: "sub" }, `抖音 · v${DXTR.version} · 改动刷新页面后完全生效`),
-      toggle("enabled", "总开关"),
-      toggle("video", "视频多线程 + 秒开", "多节点并发下载，提前下好后面几条"),
-      toggle("quality", "自动最高画质", "只在网站给出的画质里挑", () => S.get().quality === "best",
+      el("p", { class: "sub" }, `抖音 · v${DXTR.version} · 设置更改将在页面刷新后生效。`),
+      toggle("enabled", "启用脚本"),
+      toggle("video", "多线程下载与即时播放", "从多个 CDN 节点并发下载视频，并预加载后续视频"),
+      toggle("quality", "自动选择最高画质", "仅在站点接口提供的画质中选择", () => S.get().quality === "best",
         () => S.set({ quality: S.get().quality === "best" ? "site" : "best" })),
-      toggle("adblock", "去广告", "推荐流里的广告直接删掉，漏网的自动划走"),
-      toggle("clean", "净化页面", "去掉左侧导航和顶栏，换成细图标栏；打开直接进推荐"),
-      toggle("hideNavArrows", "隐藏右侧上下按钮", "推荐流右边切上一条/下一条的那两个箭头"),
-      choice("threads", "并发线程", [["auto", "自动"], ...S.THREAD_CHOICES.map((n) => [n, String(n)])]),
-      choice("prefetchNext", "预加载后面几条", [0, 1, 2, 3, 4, 5].map((n) => [n, String(n)])),
+      toggle("adblock", "屏蔽广告", "移除推荐流中的广告；未能移除的广告将自动跳过"),
+      toggle("clean", "净化页面", "以精简图标栏替代左侧导航栏与顶栏；打开首页时直接进入推荐页"),
+      toggle("hideNavArrows", "隐藏右侧切换按钮", "隐藏推荐流右侧的上一条 / 下一条按钮"),
+      choice("threads", "并发线程数", [["auto", "自动"], ...S.THREAD_CHOICES.map((n) => [n, String(n)])]),
+      choice("prefetchNext", "预加载视频数", [0, 1, 2, 3, 4, 5].map((n) => [n, String(n)])),
       choice("cacheMB", "内存缓存上限", [[150, "150 MB"], [300, "300 MB"], [600, "600 MB"], [1000, "1 GB"]]),
       el("hr"),
       el("div", { class: "stats" }, statsText()),
       el("div", { class: "actions" },
         el("button", { class: "btn", "data-ripple": true, on: { click: copyReport } }, "复制诊断信息"),
-        el("button", { class: "btn", "data-ripple": true, title: "Alt+Shift+D 可再叫出来", on: { click: () => { S.set({ floatingButton: false }); open = false; render(); } } }, "隐藏悬浮球"))
+        el("button", { class: "btn", "data-ripple": true, title: "隐藏后可按 Alt+Shift+D 重新显示", on: { click: () => { S.set({ floatingButton: false }); open = false; render(); } } }, "隐藏悬浮按钮"))
     );
   }
 

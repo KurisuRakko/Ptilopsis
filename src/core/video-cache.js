@@ -214,7 +214,7 @@ DXTR.videos = (() => {
     prefetchAfter,
     isCurrent,
     prefetchWindowOf,
-    noteMse: (entry) => { if (entry.owner && entry.owner !== entry.key && !mseMode) { mseMode = true; DXTR.log("站点使用 MSE 分轨播放"); } },
+    noteMse: (entry) => { if (entry.owner && entry.owner !== entry.key && !mseMode) { mseMode = true; DXTR.log("检测到站点采用 MSE 分轨播放"); } },
     addUrlKey: (fn) => urlKeyFns.push(fn),
     originalOf: (blobUrl) => blobToOriginal.get(blobUrl) || null,
     isOurs: (url) => blobToOriginal.has(url),

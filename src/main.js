@@ -30,5 +30,5 @@
       }, null, 2);
     }
   };
-  DXTR.log("已启动", site, DXTR.version);
+  DXTR.log("脚本已启动", site, DXTR.version);
 })();

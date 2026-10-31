@@ -104,7 +104,7 @@ DXTR.downloader = (() => {
     }
 
     start() {
-      if (!this.candidates.length) { this.fail(new Error("没有可用地址")); return this; }
+      if (!this.candidates.length) { this.fail(new Error("无可用下载地址")); return this; }
       this.startedAt = performance.now();
       active.add(this);
       pump();
@@ -194,7 +194,7 @@ DXTR.downloader = (() => {
 
     async run(chunk) {
       const candidate = this.pickCandidate(chunk.lastCandidate);
-      if (!candidate) { this.fail(new Error("所有节点都失败了")); return; }
+      if (!candidate) { this.fail(new Error("所有节点均请求失败")); return; }
       chunk.state = "running";
       const ctrl = new AbortController();
       const req = { candidate, abort: () => ctrl.abort() };
@@ -227,7 +227,7 @@ DXTR.downloader = (() => {
         if (!check.ok) { candidate.dead = res.status === 200; throw new Error(check.reason); }
         // Without a readable Content-Range the total must come from the site's metadata.
         const total = check.total || this.total || this.sizeHint;
-        if (!total) { candidate.dead = true; throw new Error("不知道文件总长"); }
+        if (!total) { candidate.dead = true; throw new Error("无法确定文件总长度"); }
         // A redirect (douyin.com/aweme/v1/play → CDN) is resolved once and reused.
         if (!candidate.resolved && !candidate.keepOrigin && res.url && res.url !== candidate.url) {
           candidate.url = res.url;
@@ -245,7 +245,7 @@ DXTR.downloader = (() => {
           const room = chunk.end - (chunk.start + chunk.got) + 1; // end may shrink when stolen from
           if (bytes.byteLength > room) {
             // More than asked for from a response we could not check: do not trust it.
-            if (check.unverified && chunk.end === requestedEnd) { candidate.dead = true; throw new Error("响应超长"); }
+            if (check.unverified && chunk.end === requestedEnd) { candidate.dead = true; throw new Error("响应长度超出请求范围"); }
             bytes = bytes.subarray(0, Math.max(0, room));
           }
           if (bytes.byteLength) {
@@ -259,7 +259,7 @@ DXTR.downloader = (() => {
           if (chunk.start + chunk.got > chunk.end) { reader.cancel().catch(() => {}); break; }
         }
         clearTimeout(timer);
-        if (chunk.start + chunk.got <= chunk.end) throw new Error("连接提前结束");
+        if (chunk.start + chunk.got <= chunk.end) throw new Error("连接提前终止");
         chunk.state = "done";
         chunk.req = null;
         candidate.node.ok += 1;
@@ -275,7 +275,7 @@ DXTR.downloader = (() => {
         candidate.node.badUntil = performance.now() + 5000;
         chunk.failures += 1;
         chunk.state = "queued";
-        DXTR.log("块失败", this.label, candidate.node.host, `${from}-${chunk.end}`, String(error.message || error));
+        DXTR.log("分块下载失败", this.label, candidate.node.host, `${from}-${chunk.end}`, String(error.message || error));
         if (chunk.failures > MAX_CHUNK_FAILURES || this.candidates.every((c) => c.dead)) {
           this.fail(new Error(`下载失败：${error.message || error}`));
         }
@@ -288,7 +288,7 @@ DXTR.downloader = (() => {
       const parts = [];
       for (const c of this.chunks) parts.push(...c.parts);
       const blob = new Blob(parts, { type: "video/mp4" });
-      if (blob.size !== this.total) { this.fail(new Error(`拼接长度不符 ${blob.size}/${this.total}`)); return; }
+      if (blob.size !== this.total) { this.fail(new Error(`合并后长度不符 ${blob.size}/${this.total}`)); return; }
       this.chunks = this.chunks.map((c) => ({ ...c, parts: [] }));
       this.blob = blob;
       this.finishedAt = performance.now();

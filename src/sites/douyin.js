@@ -62,7 +62,7 @@ DXTR.sites.douyin = (() => {
           video.width = best.play_addr.width;
           video.height = best.play_addr.height;
         }
-        DXTR.log("抖音画质", label, `${resolution(cur)}p → ${resolution(best.play_addr)}p`, best.gear_name || "");
+        DXTR.log("画质已切换至最高档", label, `${resolution(cur)}p → ${resolution(best.play_addr)}p`, best.gear_name || "");
       }
       // The DASH player picks its own gear from bit_rate[]; leave it only the best one of
       // each format, so it cannot drop to a low gear.
@@ -197,7 +197,7 @@ DXTR.sites.douyin = (() => {
       if (!tag) return;
       lastSkipped = box;
       adsSkipped += 1;
-      DXTR.log("跳过广告");
+      DXTR.log("已跳过推荐流广告");
       // The player's own "next" button if there is one, else the ↓ key it listens to.
       const next = document.querySelector('[data-e2e="video-switch-next-arrow"], .xgplayer-playswitch-next');
       if (next) { next.click(); return; }

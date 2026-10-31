@@ -25,7 +25,7 @@ export const TARGETS = {
   douyin: {
     file: "douyin.user.js",
     name: "抖音 线程撕裂者",
-    description: "抖音网页版：多线程多节点下载视频、刷下一条秒开、自动最高画质。不改网站播放器代码。",
+    description: "抖音网页版视频加速：多节点并发下载视频、预加载后续视频、自动选择最高可用画质。不修改站点播放器代码。",
     match: "https://www.douyin.com/*",
     files: [...CORE, "src/sites/douyin.js", "src/sites/douyin-images.js", "src/sites/douyin-clean.js", ...TAIL]
   }

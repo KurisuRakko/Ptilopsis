@@ -33,7 +33,7 @@ DXTR.mediaHook = (() => {
     const video = el instanceof HTMLMediaElement ? el : el.closest?.("video") || el.parentElement;
     if (rec && rec.state === "ready") {
       V.countHit(true);
-      DXTR.log("命中缓存，秒开", entry.label || entry.key);
+      DXTR.log("命中内存缓存，即时播放", entry.label || entry.key);
       if (video) watch(video, entry);
       return rec.blobUrl;
     }
@@ -153,7 +153,7 @@ DXTR.mediaHook = (() => {
   function swapTo(video, rec) {
     const state = { time: video.currentTime, paused: video.paused, rate: video.playbackRate, muted: video.muted, volume: video.volume };
     swaps += 1;
-    DXTR.log("切换到多线程副本", rec.entry.label || rec.entry.key, `@${state.time.toFixed(1)}s`);
+    DXTR.log("已切换至多线程下载副本", rec.entry.label || rec.entry.key, `@${state.time.toFixed(1)}s`);
     const restore = () => {
       video.removeEventListener("loadedmetadata", restore);
       try { if (state.time) video.currentTime = state.time; } catch (_error) {}

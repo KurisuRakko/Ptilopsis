@@ -50,8 +50,8 @@ DXTR.rangeCore = (() => {
       return { ok: true, total: null, unverified: true };
     }
     if (range.start !== wantStart) return { ok: false, reason: `起点不符 ${range.start}/${wantStart}` };
-    if (range.end < Math.min(wantEnd, (range.total ?? Infinity) - 1)) return { ok: false, reason: "长度不足" };
-    if (knownTotal && range.total && range.total !== knownTotal) return { ok: false, reason: `总长不符 ${range.total}/${knownTotal}` };
+    if (range.end < Math.min(wantEnd, (range.total ?? Infinity) - 1)) return { ok: false, reason: "响应长度不足" };
+    if (knownTotal && range.total && range.total !== knownTotal) return { ok: false, reason: `文件总长度不符 ${range.total}/${knownTotal}` };
     return { ok: true, total: range.total };
   }
 

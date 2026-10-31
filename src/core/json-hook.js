@@ -11,7 +11,7 @@ DXTR.jsonHook = (() => {
     for (const rule of rules) {
       if (!rule.match(url)) continue;
       try { if (rule.transform(obj, url) !== false) changed = true; }
-      catch (error) { DXTR.log("JSON 处理出错", String(error?.message || error)); }
+      catch (error) { DXTR.log("JSON 数据处理异常", String(error?.message || error)); }
     }
     return changed;
   }

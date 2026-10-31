@@ -169,7 +169,7 @@ input:focus { border-color: var(--color-accent); }
     if (!target) return false;
     try { sessionStorage.setItem(JUMPED_KEY, String(Date.now())); } catch (_error) { return false; }
     const link = useLink && document.querySelector(".tab-recommend a");
-    DXTR.log("净化：跳到推荐", location.pathname);
+    DXTR.log("页面净化：已跳转至推荐页", location.pathname);
     if (link) link.click();
     else location.replace(target);
     return true;
@@ -285,7 +285,7 @@ input:focus { border-color: var(--color-accent); }
     pop.hidden = true;
     pop.setAttribute("role", "dialog");
     pop.setAttribute("aria-label", "搜索");
-    pop.innerHTML = '<input type="search" placeholder="搜索你感兴趣的内容" enterkeyhint="search" autocomplete="off"><p class="hint">回车搜索 · Esc 关闭</p>';
+    pop.innerHTML = '<input type="search" placeholder="搜索你感兴趣的内容" enterkeyhint="search" autocomplete="off"><p class="hint">按 Enter 搜索，按 Esc 关闭</p>';
     input = pop.querySelector("input");
     searchButton = rail.querySelector(".search");
     root.append(css, rail, pop);
